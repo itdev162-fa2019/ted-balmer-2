@@ -71,7 +71,7 @@ namespace API.Controllers
     public ActionResult<Post> Update([FromBody]Post request) {
       var post = context.Posts.Find(request.Id);
 
-      if (request == null) {
+      if (post == null) {
         throw new Exception("Could not find post");
       }
 
