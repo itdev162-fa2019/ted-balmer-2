@@ -1,8 +1,10 @@
 import React from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import PostList from './components/PostList/PostList';
 import Post from './components/Post/Post';
+import CreatePost from './components/Post/CreatePost';
+import EditPost from './components/Post/EditPost';
 import './App.css';
 
 class App extends React.Component {
@@ -30,6 +32,46 @@ class App extends React.Component {
     });
   }
 
+  editPost = post => {
+    this.setState({
+      post: post
+    });
+  };
+
+  deletePost = post => {
+    axios
+    .delete(`http://localhost:5000/api/posts/${post.id}`)
+    .then(response => {
+      const newPosts = this.state.posts.filter(p => p.id !== post.id);
+      this.setState({
+        posts: [...newPosts]
+      });
+    })
+    .catch(error => {
+      console.error(`Error deleting post: $(error)`);
+    })
+  };
+
+  onPostCreated = post => {
+    const newPosts = [...this.state.posts, post];
+
+    this.setState({
+      posts: newPosts
+    });
+  };
+
+  onPostUpdated = post => {
+    console.log('updated post: ', post);
+    const newPosts = [...this.state.posts];
+    const index = newPosts.findIndex(p => p.id === post.id);
+
+    newPosts[index] = post;
+
+    this.setState({
+      posts: newPosts
+    });
+  };
+
   render() {
     const { posts, post } = this.state;
 
@@ -39,13 +81,28 @@ class App extends React.Component {
           <header className="App-header">
             BlogBox
           </header>
+          <nav>
+            <Link to="/">Home</Link>
+            <Link to="/new-post">New Post</Link>
+          </nav>
           <main className="App-content">
             <Switch>
               <Route exact path="/">
-                <PostList posts={posts} clickPost={this.viewPost} />
+                <PostList 
+                  posts={posts} 
+                  clickPost={this.viewPost} 
+                  deletePost={this.deletePost}
+                  editPost={this.editPost}
+                  />
               </Route>
               <Route path="/posts/:postId">
                 <Post post={post} />
+              </Route>
+              <Route path="/new-post">
+                <CreatePost onPostCreated={this.onPostCreated} />
+              </Route>
+              <Route path="/edit-post/:postId">
+                <EditPost post={post} onPostUpdated={this.onPostUpdated} />
               </Route>
             </Switch>
           </main>
